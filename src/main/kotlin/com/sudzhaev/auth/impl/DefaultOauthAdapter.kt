@@ -5,14 +5,15 @@ import com.github.scribejava.core.model.Response
 import com.github.scribejava.core.model.Verb
 import com.github.scribejava.core.oauth.OAuth20Service
 import com.sudzhaev.auth.OauthAdapter
+import com.sudzhaev.auth.OauthResult
 import java.net.URL
 import javax.servlet.http.HttpServletRequest
 
-abstract class DefaultOauthAdapter<USER>(
+abstract class DefaultOauthAdapter<USER, FAILURE>(
         final override val redirectUri: String,
         private val userInfoUrl: String,
         private val oauthService: OAuth20Service,
-) : OauthAdapter<USER> {
+) : OauthAdapter<USER, FAILURE> {
 
     init {
         // TODO: add fail-fast checks for oauthService fields
@@ -21,13 +22,12 @@ abstract class DefaultOauthAdapter<USER>(
         }
     }
 
-    override fun authenticateUser(request: HttpServletRequest): USER {
+    override fun authenticateUser(request: HttpServletRequest): OauthResult<USER, FAILURE> {
         val code = takeCodeFromRequest(request)
         val accessToken = oauthService.getAccessToken(code)
         val oAuthRequest = OAuthRequest(Verb.GET, userInfoUrl)
         oauthService.signRequest(accessToken, oAuthRequest)
         oauthService.execute(oAuthRequest).use {
-            check(it.code == 200) { "oAuthRequest returned ${it.code}" }
             return handleOauthResponse(it)
         }
     }
@@ -36,5 +36,5 @@ abstract class DefaultOauthAdapter<USER>(
         return request.getParameter("code") ?: error("'code' not found in request")
     }
 
-    abstract fun handleOauthResponse(response: Response): USER
+    abstract fun handleOauthResponse(response: Response): OauthResult<USER, FAILURE>
 }

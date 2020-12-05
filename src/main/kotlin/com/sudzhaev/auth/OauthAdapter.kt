@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest
 /**
  * Adapter used to interact with oauth provider.
  */
-interface OauthAdapter<USER> {
+interface OauthAdapter<USER, FAILURE> {
 
     /**
      * redirect uri used by oauth provider.
@@ -16,5 +16,5 @@ interface OauthAdapter<USER> {
     /**
      * Method invoked on redirect by oauth provider.
      */
-    fun authenticateUser(request: HttpServletRequest): USER
+    fun authenticateUser(request: HttpServletRequest): OauthResult<USER, FAILURE>
 }

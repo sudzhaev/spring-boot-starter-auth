@@ -14,10 +14,11 @@ import javax.servlet.http.HttpFilter
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class AuthFilter<USER>(
+class AuthFilter<USER, FAILURE>(
         private val order: Int,
         private val sessionService: SessionService<USER>,
-        oauthAdapters: List<OauthAdapter<USER>>,
+        private val failureHandler: FailureHandler<FAILURE>,
+        oauthAdapters: List<OauthAdapter<USER, FAILURE>>,
 ) : HttpFilter(), Ordered, ApplicationListener<ContextRefreshedEvent> {
 
     private val log = LoggerFactory.getLogger(AuthFilter::class.java)
@@ -41,8 +42,10 @@ class AuthFilter<USER>(
 
     private fun doFilterImpl(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
         if (isOauthRedirect(request)) {
-            val user = redirectUriToOauthAdapterMap.getValue(request.requestURI).authenticateUser(request)
-            sessionService.createSession(user, response)
+            when (val oauthResult = redirectUriToOauthAdapterMap.getValue(request.requestURI).authenticateUser(request)) {
+                is OauthResult.Success -> sessionService.createSession(oauthResult.data, response)
+                is OauthResult.Failure -> failureHandler.handle(oauthResult.data, response)
+            }
             return
         }
 
