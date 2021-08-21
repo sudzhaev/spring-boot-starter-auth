@@ -9,10 +9,10 @@
     <version>0.1.0</version>
 
     <properties>
-        <kotlin.version>1.4.20</kotlin.version>
+        <kotlin.version>1.5.21</kotlin.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
-        <scribejava-apis.version>8.0.0</scribejava-apis.version>
-        <spring-boot.version>2.4.0</spring-boot.version>
+        <scribejava-apis.version>8.3.1</scribejava-apis.version>
+        <spring-boot.version>2.5.3</spring-boot.version>
     </properties>
 
     <dependencies>

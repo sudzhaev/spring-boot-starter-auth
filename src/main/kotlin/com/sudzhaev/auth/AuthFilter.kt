@@ -19,7 +19,7 @@ class AuthFilter<USER, FAILURE>(
     oauthAdapters: List<OauthAdapter<USER, FAILURE>>,
 ) : HttpFilter(), Ordered, ApplicationListener<ContextRefreshedEvent> {
 
-    private val redirectUriToOauthAdapterMap = oauthAdapters.map { it.redirectUri to it }.toMap()
+    private val redirectUriToOauthAdapterMap = oauthAdapters.associateBy { it.redirectUri }
     private lateinit var requestMappingHandlerMapping: RequestMappingHandlerMapping
 
     override fun doFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
@@ -50,7 +50,8 @@ class AuthFilter<USER, FAILURE>(
             return false
         }
 
-        if (unauthorizedAllowed(request) || tryAuthorize(request)) {
+        val authorized = tryAuthorize(request)
+        if (authorized || unauthorizedAllowed(request)) {
             return true
         }
 

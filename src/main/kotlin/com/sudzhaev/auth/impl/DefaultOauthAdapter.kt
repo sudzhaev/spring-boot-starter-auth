@@ -10,9 +10,9 @@ import java.net.URL
 import javax.servlet.http.HttpServletRequest
 
 abstract class DefaultOauthAdapter<USER, FAILURE>(
-        final override val redirectUri: String,
-        private val userInfoUrl: String,
-        private val oauthService: OAuth20Service,
+    final override val redirectUri: String,
+    private val userInfoUrl: String,
+    private val oauthService: OAuth20Service,
 ) : OauthAdapter<USER, FAILURE> {
 
     init {
@@ -27,9 +27,8 @@ abstract class DefaultOauthAdapter<USER, FAILURE>(
         val accessToken = oauthService.getAccessToken(code)
         val oAuthRequest = OAuthRequest(Verb.GET, userInfoUrl)
         oauthService.signRequest(accessToken, oAuthRequest)
-        oauthService.execute(oAuthRequest).use {
-            return handleOauthResponse(it)
-        }
+        val response = oauthService.execute(oAuthRequest)
+        return handleOauthResponse(response)
     }
 
     protected open fun takeCodeFromRequest(request: HttpServletRequest): String {
