@@ -24,6 +24,7 @@ abstract class DefaultOauthAdapter<USER, FAILURE>(
 
     override fun authenticateUser(request: HttpServletRequest): OauthResult<USER, FAILURE> {
         val code = takeCodeFromRequest(request)
+//        oauthService.extractAuthorization(request.requestURI)
         val accessToken = oauthService.getAccessToken(code)
         val oAuthRequest = OAuthRequest(Verb.GET, userInfoUrl)
         oauthService.signRequest(accessToken, oAuthRequest)

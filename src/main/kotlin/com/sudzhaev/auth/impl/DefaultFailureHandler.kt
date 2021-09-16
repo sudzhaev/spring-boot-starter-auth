@@ -3,6 +3,7 @@ package com.sudzhaev.auth.impl
 import com.sudzhaev.auth.FailureHandler
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.web.filter.CommonsRequestLoggingFilter
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -20,17 +21,26 @@ class DefaultFailureHandler<FAILURE>(
     }
 
     override fun handleUserNotResolved(request: HttpServletRequest, response: HttpServletResponse) {
-        log.error("user not resolved: ${formatRequestForLogging(request)}")
+        log.error("user not resolved: ${ToStringRequestHelper.build(request)}")
         response.status = userNotResolvedStatus.value()
     }
 
     override fun handleAnyException(request: HttpServletRequest, response: HttpServletResponse, exception: Exception) {
-        log.error("internal server error: ${formatRequestForLogging(request)}")
+        log.error("internal server error: ${ToStringRequestHelper.build(request)}")
         response.status = anyExceptionStatus.value()
     }
 
-    private fun formatRequestForLogging(request: HttpServletRequest): String {
-        // TODO: log headers and cookies
-        return "${request.method} ${request.requestURI}"
+    private object ToStringRequestHelper : CommonsRequestLoggingFilter() {
+
+        init {
+            isIncludeQueryString = true
+            isIncludeClientInfo = true
+            isIncludeHeaders = true
+            isIncludePayload = true
+        }
+
+        fun build(request: HttpServletRequest): String {
+            return createMessage(request, "{", "}")
+        }
     }
 }

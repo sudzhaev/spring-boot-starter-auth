@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import javax.servlet.FilterChain
+import javax.servlet.ServletException
 import javax.servlet.http.HttpFilter
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -42,11 +43,7 @@ class AuthFilter<USER, FAILURE>(
 
     private fun authorize(request: HttpServletRequest, response: HttpServletResponse): Boolean {
         if (isOauthRedirect(request)) {
-            when (val oauthResult =
-                redirectUriToOauthAdapterMap.getValue(request.requestURI).authenticateUser(request)) {
-                is OauthResult.Success -> sessionService.createSession(oauthResult.data, response)
-                is OauthResult.Failure -> failureHandler.handleOauthFailure(oauthResult.data, response)
-            }
+            handleOauthRedirect(request, response)
             return false
         }
 
@@ -63,10 +60,23 @@ class AuthFilter<USER, FAILURE>(
         return request.method == HttpMethod.GET.name && request.requestURI in redirectUriToOauthAdapterMap
     }
 
+    private fun handleOauthRedirect(request: HttpServletRequest, response: HttpServletResponse) {
+        val oauthAdapter = redirectUriToOauthAdapterMap[request.requestURI]
+            ?: error("oauthAdapter not found for uri=${request.requestURI}")
+        when (val oauthResult = oauthAdapter.authenticateUser(request)) {
+            is OauthResult.Success -> sessionService.createSession(oauthResult.data, response)
+            is OauthResult.Failure -> failureHandler.handleOauthFailure(oauthResult.data, response)
+        }
+    }
+
     private fun unauthorizedAllowed(request: HttpServletRequest): Boolean {
-        return (requestMappingHandlerMapping.getHandler(request)?.handler as? HandlerMethod)
-            ?.hasMethodAnnotation(Unauthorized::class.java)
-            ?: true
+        val handler = try {
+            requestMappingHandlerMapping.getHandler(request)?.handler as? HandlerMethod
+                ?: return false
+        } catch (e: ServletException) {
+            return false
+        }
+        return handler.hasMethodAnnotation(Unauthorized::class.java)
     }
 
     private fun tryAuthorize(request: HttpServletRequest): Boolean {

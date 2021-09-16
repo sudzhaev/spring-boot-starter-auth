@@ -27,6 +27,7 @@ class UserArgumentResolver : HandlerMethodArgumentResolver {
         if (attribute != null) {
             return attribute
         }
+        // TODO: validate that all optional User params have UnauthorizedAnnotation on application startup
         if (parameter.isOptional && parameter.hasMethodAnnotation(Unauthorized::class.java)) {
             return null
         }
