@@ -6,7 +6,7 @@
 
     <groupId>com.sudzhaev</groupId>
     <artifactId>spring-boot-starter-auth</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 
     <properties>
         <assertj-core.version>3.20.2</assertj-core.version>
@@ -15,6 +15,7 @@
         <mockito-kotlin.version>3.2.0</mockito-kotlin.version>
         <scribejava-apis.version>8.3.1</scribejava-apis.version>
         <spring-boot.version>2.5.3</spring-boot.version>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
@@ -41,6 +42,12 @@
             <version>${spring-boot.version}</version>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.junit.jupiter</groupId>-->
+<!--            <artifactId>junit-jupiter-engine</artifactId>-->
+<!--            <version>5.8.0</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.mockito.kotlin</groupId>
             <artifactId>mockito-kotlin</artifactId>
@@ -84,6 +91,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test*</include>
+                    </includes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
